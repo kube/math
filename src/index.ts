@@ -8,6 +8,6 @@
      ## ## ## :##
       ## ## ##*/
 
-export * from './face'
-export * from './vector'
-export * from './matrix'
+export * from './Range'
+export * from './Vector'
+export * from './Matrix'

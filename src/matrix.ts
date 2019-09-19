@@ -8,72 +8,77 @@
      ## ## ## :##
       ## ## ##*/
 
-import { Vector } from './vector';
+import { Range } from './Range';
 
-const { cos, sin } = Math;
-export type Matrix = Vector[];
+export class Matrix extends Float64Array {
+  private readonly rows: number;
+  private readonly columns: number;
 
-export const product = (matrixA: Matrix, matrixB: Matrix) => {
-  const resultMatrix: Matrix = [];
-  const lines = matrixA.length;
-  const cols = matrixB[0].length;
-  const commonSide = matrixB.length;
-
-  for (let i = 0; i < lines; i++) {
-    resultMatrix[i] = [];
-
-    for (let j = 0; j < cols; j++) {
-      let value = 0;
-
-      for (let k = 0; k < commonSide; k++) {
-        // For translation matrices, we need a 4th coordinate set to 1
-        const aik = matrixA[i][k] === undefined ? 1 : matrixA[i][k];
-        value += aik * matrixB[k][j];
-      }
-      resultMatrix[i][j] = value;
+  constructor(
+    rows: number,
+    columns: number,
+    buffer?: Float64Array | Array<number>,
+  ) {
+    if (buffer) {
+      super(buffer);
+    } else {
+      super(rows * columns);
     }
+    this.rows = rows;
+    this.columns = columns;
   }
-  return resultMatrix;
-};
 
-export const applyTransform = (matrices: Matrix[]) => {
-  const matrix = matrices.reduce(product);
-  return (vector: Vector) => product([vector], matrix)[0];
-};
+  static identity(width: number) {
+    const buffer = new Float64Array(width * width);
+    const gap = width + 1;
 
-export const rotate = {
-  X: (t: number) => [
-    [1, 0, 0, 0],
-    [0, cos(t), -sin(t), 0],
-    [0, sin(t), cos(t), 0],
-    [0, 0, 0, 1],
-  ],
+    for (let i = 0; i < width; i++) {
+      buffer[i * gap] = 1;
+    }
+    return new Matrix(width, width, buffer);
+  }
 
-  Y: (t: number) => [
-    [cos(t), 0, sin(t), 0],
-    [0, 1, 0, 0],
-    [-sin(t), 0, cos(t), 0],
-    [0, 0, 0, 1],
-  ],
+  static fromArray(data: number[][]) {
+    return new Matrix(
+      data.length,
+      data[0].length,
+      data.reduce((a, b) => a.concat(b)),
+    );
+  }
 
-  Z: (t: number) => [
-    [cos(t), sin(t), 0, 0],
-    [-sin(t), cos(t), 0, 0],
-    [0, 0, 1, 0],
-    [0, 0, 0, 1],
-  ],
-};
+  static product(a: Matrix, b: Matrix) {
+    const rows = a.rows;
+    const columns = b.columns;
+    const commonSide = b.rows;
+    const result = new Matrix(rows, columns);
 
-export const scale = (s: number) => [
-  [s, 0, 0, 0],
-  [0, s, 0, 0],
-  [0, 0, s, 0],
-  [0, 0, 0, 1],
-];
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < columns; j++) {
+        let value = 0;
+        for (let k = 0; k < commonSide; k++) {
+          value += a.getAt(i, k) * b.getAt(k, j);
+        }
+        result.setAt(i, j, value);
+      }
+    }
+    return result;
+  }
 
-export const translate = ([x, y, z]: Vector) => [
-  [1, 0, 0, 0],
-  [0, 1, 0, 0],
-  [0, 0, 1, 0],
-  [x, y, z, 1],
-];
+  setAt(i: number, j: number, value: number) {
+    this[i * this.columns + j] = value;
+  }
+
+  getAt(i: number, j: number) {
+    return this[i * this.columns + j];
+  }
+
+  dot(b: Matrix) {
+    return Matrix.product(this, b);
+  }
+
+  toArray() {
+    return Range(this.rows).map(i =>
+      Range(this.columns).map(j => this[i * this.columns + j]),
+    );
+  }
+}
