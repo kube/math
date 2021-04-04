@@ -1,3 +1,5 @@
+.devcontainer
 src
 yarn.lock
 tsconfig.json
+**/__tests__

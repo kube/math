@@ -1,14 +1,4 @@
-
-      /*#######.
-     ########",#:
-   #########',##".
-  ##'##'## .##',##.
-   ## ## ## # ##",#.
-    ## ## ## ## ##'
-     ## ## ## :##
-      ## ## ##*/
-
-import { Range } from './Range';
+import { Range } from './utils';
 
 export class Matrix extends Float64Array {
   private readonly rows: number;

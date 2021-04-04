@@ -1,13 +1,3 @@
-
-      /*#######.
-     ########",#:
-   #########',##".
-  ##'##'## .##',##.
-   ## ## ## # ##",#.
-    ## ## ## ## ##'
-     ## ## ## :##
-      ## ## ##*/
-
 export class Vector extends Float64Array {
   constructor(lengthOrArray: number | Float64Array | Array<number>) {
     if (typeof lengthOrArray === 'number') {
@@ -17,7 +7,7 @@ export class Vector extends Float64Array {
     }
   }
 
-  static crossProduct(a: Vector, b: Vector) {
+  static cross(a: Vector, b: Vector) {
     return new Vector(
       [a[1] * b[2] - a[2] * b[1],
       a[2] * b[0] - a[0] * b[2],
@@ -51,8 +41,8 @@ export class Vector extends Float64Array {
     return result;
   }
 
-  crossProduct(b: Vector) {
-    return Vector.crossProduct(this, b);
+  cross(b: Vector) {
+    return Vector.cross(this, b);
   }
 
   dot(b: Vector) {

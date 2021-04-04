@@ -7,5 +7,5 @@ A simple Math Library for TypeScript.
 ## Install
 
 ```sh
-yarn add @kube/math
+npm install --save @kube/math
 ```
