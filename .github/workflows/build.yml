@@ -1,0 +1,137 @@
+
+      #########.
+     ########",#:
+   #########',##".
+  ##'##'## .##',##.
+   ## ## ## # ##",#.
+    ## ## ## ## ##'
+     ## ## ## :##
+      ## ## ##."
+
+name: Build
+
+on: [push]
+
+jobs:
+  install:
+    name: Install
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Cache node modules
+        uses: actions/cache@v1
+        id: node_modules-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node_modules-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node_modules-
+
+      - run: npm install
+        if: steps.node_modules-cache.outputs.cache-hit != 'true'
+
+  test:
+    name: Test
+    needs: install
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Load node_modules
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node_modules-${{ hashFiles('package-lock.json') }}
+
+      - run: npm run test
+        name: Test
+
+  build:
+    name: Build
+    needs: install
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Load node_modules
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node_modules-${{ hashFiles('package-lock.json') }}
+
+      - run: npm run build
+
+      - name: Persist dist directory
+        uses: actions/upload-artifact@v1
+        with:
+          name: dist
+          path: dist
+
+  publish:
+    name: Publish to NPM
+    runs-on: ubuntu-latest
+    needs: [test, build]
+
+    if: github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Load dist directory
+        uses: actions/download-artifact@v1
+        with:
+          name: dist
+          path: dist
+
+      - name: Get version in current branch
+        id: branch-version
+        run: echo "##[set-output name=value;]$(jq -r .version package.json)"
+
+      - name: Check if version exists on NPM
+        id: npm-version
+        run: echo "##[set-output name=value;]$(npm view @kube/math@${{ steps.branch-version.outputs.value }} version)"
+
+      - name: Version update detected
+        if: steps.npm-version.outputs.value != steps.branch-version.outputs.value
+        run: 'echo "Version update found: New version: ${{ steps.branch-version.outputs.value }}"'
+
+      - name: Publish package to NPM
+        if: steps.npm-version.outputs.value != steps.branch-version.outputs.value
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          npm config set //registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN
+          npm config set scope "<@OWNER>"
+          npm config list
+          npm publish --access public
