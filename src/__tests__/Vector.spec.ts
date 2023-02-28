@@ -1,4 +1,5 @@
 import { Assert, IsExactType } from "typebolt";
+import { describe, it, expect } from "vitest";
 import { Vector } from "../Vector";
 
 describe(Vector.name, () => {
@@ -57,7 +58,7 @@ describe(Vector.name, () => {
     });
 
     describe("Fluent-style", () => {
-      describe(Vector.prototype.add, () => {
+      describe(Vector.prototype.add.name, () => {
         it("returns same as static method", () => {
           const a = new Vector([1, 2, 3]);
           const b = new Vector([1, 2, 3]);
@@ -70,7 +71,7 @@ describe(Vector.name, () => {
         });
       });
 
-      describe(Vector.prototype.cross, () => {
+      describe(Vector.prototype.cross.name, () => {
         it("returns same as static method", () => {
           const a = new Vector([1, 2, 3]);
           const b = new Vector([1, 2, 3]);

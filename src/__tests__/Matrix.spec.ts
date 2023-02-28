@@ -1,4 +1,5 @@
 import { Assert, IsExactType } from "typebolt";
+import { describe, it, expect } from "vitest";
 import { Matrix } from "../Matrix";
 
 describe(Matrix.name, () => {
@@ -28,7 +29,7 @@ describe(Matrix.name, () => {
     });
   });
 
-  describe(Matrix.identity, () => {
+  describe(Matrix.identity.name, () => {
     it("returns a matrix with diagonals of ones", () => {
       const result2 = Matrix.identity(2);
       Assert<IsExactType<typeof result2, Matrix<2, 2>>>();
@@ -56,7 +57,7 @@ describe(Matrix.name, () => {
     });
   });
 
-  describe(Matrix.translation, () => {
+  describe(Matrix.translation.name, () => {
     it("should return a matrix which when multiplied, should translate a matrix", () => {
       const translationMatrix = Matrix.translation(1, 2, 3);
       const vector = new Matrix(1, 4, [0, 0, 0, 1]);
