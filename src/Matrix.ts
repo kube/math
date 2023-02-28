@@ -1,4 +1,4 @@
-import { Range } from "./utils";
+import { Range } from "./utils.js";
 
 const { cos, sin } = Math;
 

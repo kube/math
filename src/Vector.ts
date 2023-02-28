@@ -1,4 +1,4 @@
-import { Matrix } from "./Matrix";
+import { Matrix } from "./Matrix.js";
 
 type X1 = [number];
 type X2 = [number, number];
