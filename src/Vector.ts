@@ -85,11 +85,39 @@ export class Vector<N extends Length> extends Float64Array {
     return Vector.subtract(this, b);
   }
 
-  rotateX() {}
+  rotateX(angle: number) {
+    // @ts-expect-error
+    return this.multiplyByMatrix(Matrix.rotationX(angle));
+  }
 
-  rotateY() {}
+  rotateY(angle: number) {
+    // @ts-expect-error
+    return this.multiplyByMatrix(Matrix.rotationY(angle));
+  }
 
-  rotateZ() {}
+  rotateZ(angle: number) {
+    // @ts-expect-error
+    return this.multiplyByMatrix(Matrix.rotationZ(angle));
+  }
+
+  rotate(axis: Vector<4>, angle: number) {
+    // @ts-expect-error
+    return this.multiplyByMatrix(Matrix.rotation(axis, angle));
+  }
+
+  norm() {
+    return Math.sqrt(Vector.dot(this, this));
+  }
+
+  normalize() {
+    const norm = this.norm();
+    const result = new Vector(this.length);
+
+    for (let i = 0; i < this.length; i++) {
+      result[i] = this[i] / norm;
+    }
+    return result;
+  }
 
   toArray() {
     return Array.from(this);
