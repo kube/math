@@ -1,3 +1,4 @@
+import { Vector } from "./Vector.js";
 import { Range } from "./utils.js";
 
 const { cos, sin } = Math;
@@ -72,6 +73,34 @@ export class Matrix<R extends number, C extends number> extends Float64Array {
     const c = cos(t);
     const s = sin(t);
     return new Matrix(4, 4, [c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+  }
+
+  static rotation(axis: Vector<4>, angle: number) {
+    const ca = Math.cos(angle);
+    const sa = Math.sin(angle);
+    const t = 1 - ca;
+    const x = axis[0];
+    const y = axis[1];
+    const z = axis[2];
+
+    return new Matrix(4, 4, [
+      ca + x * x * t,
+      x * y * t - z * sa,
+      x * z * t + y * sa,
+      0,
+      x * y * t + z * sa,
+      ca + y * y * t,
+      y * z * t - x * sa,
+      0,
+      z * x * t - y * sa,
+      z * y * t + x * sa,
+      ca + z * z * t,
+      0,
+      0,
+      0,
+      0,
+      1,
+    ]);
   }
 
   static translationX(x: number) {
