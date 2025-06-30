@@ -49,12 +49,18 @@ export class Matrix<R extends number, C extends number> extends Float64Array {
     return new Matrix(width, width, buffer);
   }
 
-  static fromArray(data: number[][]) {
-    return new Matrix(
-      data.length,
-      data[0].length,
-      data.reduce((a, b) => a.concat(b))
+  /**
+   * Creates a matrix from a 2D array with dimensions inferred as literal types.
+   */
+  static fromArray<const R extends number, const C extends number>(
+    data: (number[] & { length: C })[] & { length: R }
+  ): Matrix<R, C> {
+    // flatten row-major
+    const buffer = data.reduce<Array<number>>(
+      (acc, row) => acc.concat(row),
+      []
     );
+    return new Matrix<R, C>(data.length as R, data[0].length as C, buffer);
   }
 
   static rotationX(t: number) {
@@ -186,10 +192,7 @@ export class Matrix<R extends number, C extends number> extends Float64Array {
   }
 
   cofactor(row: number, column: number): number {
-    const subMatrix = new Matrix(
-      this.rows - 1,
-      this.columns - 1
-    );
+    const subMatrix = new Matrix(this.rows - 1, this.columns - 1);
 
     let subI = 0;
     for (let i = 0; i < this.rows; i++) {
@@ -205,6 +208,52 @@ export class Matrix<R extends number, C extends number> extends Float64Array {
 
     const minor = subMatrix.determinant();
     return ((row + column) % 2 === 0 ? 1 : -1) * minor;
+  }
+
+  /**
+   * Returns the transpose of this matrix.
+   */
+  transpose(): Matrix<C, R> {
+    const result = new Matrix(this.columns, this.rows);
+    for (let i = 0; i < this.rows; i++) {
+      for (let j = 0; j < this.columns; j++) {
+        result.setAt(j, i, this.getAt(i, j));
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns the inverse of this matrix (adjugate divided by determinant).
+   * Throws if the matrix is not square or is singular.
+   */
+  inverse(): Matrix<R, C> {
+    // @ts-expect-error Generic types issue
+    if (this.rows !== this.columns) {
+      throw new Error("Inverse is only defined for square matrices");
+    }
+    const n = this.rows;
+    const det = this.determinant();
+    if (det === 0) {
+      throw new Error("Matrix is singular and cannot be inverted");
+    }
+    // build cofactor matrix
+    const cof = new Matrix(n, n);
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        cof.setAt(i, j, this.cofactor(i, j));
+      }
+    }
+    // adjugate is transpose of cofactor
+    const adj = cof.transpose();
+    // divide by determinant
+    const inv = new Matrix(n, n);
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        inv.setAt(i, j, adj.getAt(i, j) / det);
+      }
+    }
+    return inv;
   }
 
   toPrettyString() {

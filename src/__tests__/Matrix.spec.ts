@@ -169,4 +169,81 @@ describe(Matrix.name, () => {
       expect(det6).toBe(536256);
     });
   });
+
+  describe(Matrix.prototype.transpose.name, () => {
+    it("should transpose a rectangular matrix", () => {
+      const m = Matrix.fromArray([
+        [1, 2, 3],
+        [4, 5, 6],
+      ]);
+      const t = m.transpose();
+      Assert<IsExactType<typeof t, Matrix<number, number>>>();
+      expect(t.toArray()).toEqual([
+        [1, 4],
+        [2, 5],
+        [3, 6],
+      ]);
+    });
+
+    it("should transpose a square matrix", () => {
+      const m2 = Matrix.fromArray([
+        [1, 2],
+        [3, 4],
+      ]);
+      const t2 = m2.transpose();
+      Assert<IsExactType<typeof t2, Matrix<number, number>>>();
+      expect(t2.toArray()).toEqual([
+        [1, 3],
+        [2, 4],
+      ]);
+    });
+  });
+
+  describe(Matrix.prototype.inverse.name, () => {
+    it("should invert a 2x2 matrix", () => {
+      const m = Matrix.fromArray([
+        [4, 7],
+        [2, 6],
+      ]);
+      const inv = m.inverse();
+      Assert<IsExactType<typeof inv, Matrix<number, number>>>();
+      expect(inv.toArray()).toEqual([
+        [0.6, -0.7],
+        [-0.2, 0.4],
+      ]);
+    });
+
+    it("should throw on singular matrix", () => {
+      const m = Matrix.fromArray([
+        [1, 2],
+        [2, 4],
+      ]);
+      expect(() => m.inverse()).toThrowError(
+        "Matrix is singular and cannot be inverted"
+      );
+    });
+
+    it("should invert a 3x3 matrix", () => {
+      const m3 = Matrix.fromArray([
+        [1, 2, 3],
+        [0, 1, 4],
+        [5, 6, 0],
+      ]);
+      const inv3 = m3.inverse();
+      Assert<IsExactType<typeof inv3, Matrix<number, number>>>();
+      expect(inv3.toArray()).toEqual([
+        [-24, 18, 5],
+        [20, -15, -4],
+        [-5, 4, 1],
+      ]);
+    });
+
+    it("should invert a 4x4 scale matrix", () => {
+      const m = Matrix.scale(2);
+      const inv = m.inverse();
+      Assert<IsExactType<typeof inv, Matrix<4, 4>>>();
+      const expected = Matrix.scale(0.5);
+      expect(inv.toPrettyString()).toEqual(expected.toPrettyString());
+    });
+  });
 });
