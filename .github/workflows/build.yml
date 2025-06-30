@@ -19,17 +19,17 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x, 18.x]
+        node-version: [20.x, 22.x]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Cache node modules
-        uses: actions/cache@v1
+      - name: Cache node_modules
+        uses: actions/cache@v3
         id: node_modules-cache
         with:
           path: node_modules
@@ -47,17 +47,17 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x, 18.x]
+        node-version: [20.x, 22.x]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
 
       - name: Load node_modules
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: node_modules
           key: ${{ runner.os }}-node_modules-${{ hashFiles('package-lock.json') }}
@@ -72,17 +72,17 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x, 18.x]
+        node-version: [20.x, 22.x]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
 
       - name: Load node_modules
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: node_modules
           key: ${{ runner.os }}-node_modules-${{ hashFiles('package-lock.json') }}
@@ -90,9 +90,9 @@ jobs:
       - run: npm run build
 
       - name: Persist dist directory
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: dist-${{ matrix.node-version }}
           path: dist
 
   publish:
@@ -104,23 +104,25 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.ref }}
 
       - name: Load dist directory
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v4
         with:
-          name: dist
+          name: dist-22.x
           path: dist
 
       - name: Get version in current branch
         id: branch-version
-        run: echo "##[set-output name=value;]$(jq -r .version package.json)"
+        run: |
+          echo "value=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
 
       - name: Check if version exists on NPM
         id: npm-version
-        run: echo "##[set-output name=value;]$(npm view @kube/math@${{ steps.branch-version.outputs.value }} version)"
+        run: |
+          echo "value=$(npm view @kube/math@${{ steps.branch-version.outputs.value }} version)" >> $GITHUB_OUTPUT
 
       - name: Version update detected
         if: steps.npm-version.outputs.value != steps.branch-version.outputs.value

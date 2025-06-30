@@ -1,5 +1,5 @@
 import { Assert, IsExactType } from "typebolt";
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { Matrix } from "../Matrix";
 
 describe(Matrix.name, () => {
@@ -88,6 +88,162 @@ describe(Matrix.name, () => {
 
       Assert<IsExactType<typeof result, typeof expected>>();
       expect(result).toEqual(expected);
+    });
+  });
+
+  describe(Matrix.prototype.cofactor.name, () => {
+    it("should compute the cofactor for a submatrix element", () => {
+      const m = Matrix.fromArray([
+        [3, 5, 0],
+        [2, -1, 7],
+        [6, -1, 5],
+      ]);
+      const cof00 = m.cofactor(0, 0);
+      Assert<IsExactType<typeof cof00, number>>();
+      expect(cof00).toBe(2);
+
+      const cof01 = m.cofactor(0, 1);
+      Assert<IsExactType<typeof cof01, number>>();
+      expect(cof01).toBe(32);
+    });
+  });
+
+  describe(Matrix.prototype.determinant.name, () => {
+    it("should compute the determinant of a 2x2 matrix", () => {
+      const m2 = Matrix.fromArray([
+        [1, 2],
+        [3, 4],
+      ]);
+      const det2 = m2.determinant();
+      Assert<IsExactType<typeof det2, number>>();
+      expect(det2).toBe(-2);
+    });
+
+    it("should compute the determinant of a 3x3 matrix", () => {
+      const m3 = Matrix.fromArray([
+        [3, 5, 0],
+        [2, -1, 7],
+        [6, -1, 5],
+      ]);
+      const det3 = m3.determinant();
+      Assert<IsExactType<typeof det3, number>>();
+      expect(det3).toBe(166);
+    });
+
+    it("should compute the determinant of a 4x4 matrix", () => {
+      const m4 = Matrix.fromArray([
+        [1, 0, 2, -1],
+        [3, 0, 0, 5],
+        [2, 1, 4, -3],
+        [1, 0, 5, 0],
+      ]);
+      const det4 = m4.determinant();
+      Assert<IsExactType<typeof det4, number>>();
+      expect(det4).toBe(30);
+    });
+
+    it("should compute the determinant of a 5x5 matrix", () => {
+      const m5 = Matrix.fromArray([
+        [1, 2, 3, 4, 5],
+        [0, 6, 7, 8, 9],
+        [0, 0, 10, 11, 12],
+        [0, 0, 0, 13, 14],
+        [0, 0, 0, 0, 15],
+      ]);
+      const det5 = m5.determinant();
+      Assert<IsExactType<typeof det5, number>>();
+      expect(det5).toBe(11700);
+    });
+
+    it("should compute the determinant of a 6x6 matrix", () => {
+      const m6 = Matrix.fromArray([
+        [1, 2, 3, 4, 5, 6],
+        [0, 7, 8, 9, 10, 11],
+        [0, 0, 12, 13, 14, 15],
+        [0, 0, 0, 16, 17, 18],
+        [0, 0, 0, 0, 19, 20],
+        [0, 0, 0, 0, 0, 21],
+      ]);
+      const det6 = m6.determinant();
+      Assert<IsExactType<typeof det6, number>>();
+      expect(det6).toBe(536256);
+    });
+  });
+
+  describe(Matrix.prototype.transpose.name, () => {
+    it("should transpose a rectangular matrix", () => {
+      const m = Matrix.fromArray([
+        [1, 2, 3],
+        [4, 5, 6],
+      ]);
+      const t = m.transpose();
+      Assert<IsExactType<typeof t, Matrix<number, number>>>();
+      expect(t.toArray()).toEqual([
+        [1, 4],
+        [2, 5],
+        [3, 6],
+      ]);
+    });
+
+    it("should transpose a square matrix", () => {
+      const m2 = Matrix.fromArray([
+        [1, 2],
+        [3, 4],
+      ]);
+      const t2 = m2.transpose();
+      Assert<IsExactType<typeof t2, Matrix<number, number>>>();
+      expect(t2.toArray()).toEqual([
+        [1, 3],
+        [2, 4],
+      ]);
+    });
+  });
+
+  describe(Matrix.prototype.inverse.name, () => {
+    it("should invert a 2x2 matrix", () => {
+      const m = Matrix.fromArray([
+        [4, 7],
+        [2, 6],
+      ]);
+      const inv = m.inverse();
+      Assert<IsExactType<typeof inv, Matrix<number, number>>>();
+      expect(inv.toArray()).toEqual([
+        [0.6, -0.7],
+        [-0.2, 0.4],
+      ]);
+    });
+
+    it("should throw on singular matrix", () => {
+      const m = Matrix.fromArray([
+        [1, 2],
+        [2, 4],
+      ]);
+      expect(() => m.inverse()).toThrowError(
+        "Matrix is singular and cannot be inverted"
+      );
+    });
+
+    it("should invert a 3x3 matrix", () => {
+      const m3 = Matrix.fromArray([
+        [1, 2, 3],
+        [0, 1, 4],
+        [5, 6, 0],
+      ]);
+      const inv3 = m3.inverse();
+      Assert<IsExactType<typeof inv3, Matrix<number, number>>>();
+      expect(inv3.toArray()).toEqual([
+        [-24, 18, 5],
+        [20, -15, -4],
+        [-5, 4, 1],
+      ]);
+    });
+
+    it("should invert a 4x4 scale matrix", () => {
+      const m = Matrix.scale(2);
+      const inv = m.inverse();
+      Assert<IsExactType<typeof inv, Matrix<4, 4>>>();
+      const expected = Matrix.scale(0.5);
+      expect(inv.toPrettyString()).toEqual(expected.toPrettyString());
     });
   });
 });
