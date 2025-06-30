@@ -181,14 +181,38 @@ export class Matrix<R extends number, C extends number> extends Float64Array {
       return a * d - b * c;
     }
 
-    // General NxN via Laplace expansion (not efficient but general)
-    let det = 0;
-
-    for (let j = 0; j < n; j++) {
-      det += this.getAt(0, j) * this.cofactor(0, j);
+    // For small matrices, use Laplace expansion; for larger, use LU decomposition
+    if (n <= 4) {
+      let det = 0;
+      for (let j = 0; j < n; j++) {
+        det += this.getAt(0, j) * this.cofactor(0, j);
+      }
+      return det;
+    } else {
+      // LU decomposition (Doolittle's method, no pivoting)
+      const A = new Float64Array(this);
+      const N = n;
+      let det = 1;
+      for (let i = 0; i < N; i++) {
+        for (let j = i; j < N; j++) {
+          let sum = 0;
+          for (let k = 0; k < i; k++) {
+            sum += A[i * N + k] * A[k * N + j];
+          }
+          A[i * N + j] = this.getAt(i, j) - sum;
+        }
+        for (let j = i + 1; j < N; j++) {
+          let sum = 0;
+          for (let k = 0; k < i; k++) {
+            sum += A[j * N + k] * A[k * N + i];
+          }
+          if (A[i * N + i] === 0) return 0; // Singular
+          A[j * N + i] = (this.getAt(j, i) - sum) / A[i * N + i];
+        }
+        det *= A[i * N + i];
+      }
+      return det;
     }
-
-    return det;
   }
 
   cofactor(row: number, column: number): number {
