@@ -153,6 +153,60 @@ export class Matrix<R extends number, C extends number> extends Float64Array {
     return Matrix.product(this, b);
   }
 
+  determinant(): number {
+    // @ts-expect-error Generic types issue
+    if (this.rows !== this.columns) {
+      throw new Error("Determinant is only defined for square matrices");
+    }
+
+    const n = this.rows;
+
+    // 1x1
+    if (n === 1) {
+      return this.getAt(0, 0);
+    }
+
+    // 2x2
+    if (n === 2) {
+      const a = this.getAt(0, 0);
+      const b = this.getAt(0, 1);
+      const c = this.getAt(1, 0);
+      const d = this.getAt(1, 1);
+      return a * d - b * c;
+    }
+
+    // General NxN via Laplace expansion (not efficient but general)
+    let det = 0;
+
+    for (let j = 0; j < n; j++) {
+      det += this.getAt(0, j) * this.cofactor(0, j);
+    }
+
+    return det;
+  }
+
+  cofactor(row: number, column: number): number {
+    const subMatrix = new Matrix(
+      this.rows - 1,
+      this.columns - 1
+    );
+
+    let subI = 0;
+    for (let i = 0; i < this.rows; i++) {
+      if (i === row) continue;
+      let subJ = 0;
+      for (let j = 0; j < this.columns; j++) {
+        if (j === column) continue;
+        subMatrix.setAt(subI, subJ, this.getAt(i, j));
+        subJ++;
+      }
+      subI++;
+    }
+
+    const minor = subMatrix.determinant();
+    return ((row + column) % 2 === 0 ? 1 : -1) * minor;
+  }
+
   toPrettyString() {
     function round(x: number) {
       return Math.floor(x * 100) / 100;
