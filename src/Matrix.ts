@@ -35,14 +35,38 @@ export class Matrix<R extends number, C extends number> extends Float64Array {
     return new Matrix(width, width, buffer);
   }
 
-  static scale(scale: number) {
+  /**
+   * Non-uniform scale along X axis.
+   */
+  static scaleX(x: number) {
+    return Matrix.identity(4).setAt(0, 0, x);
+  }
+
+  /**
+   * Non-uniform scale along Y axis.
+   */
+  static scaleY(y: number) {
+    return Matrix.identity(4).setAt(1, 1, y);
+  }
+
+  /**
+   * Non-uniform scale along Z axis.
+   */
+  static scaleZ(z: number) {
+    return Matrix.identity(4).setAt(2, 2, z);
+  }
+
+  /**
+   * Uniform scale along X, Y, Z axes.
+   */
+  static scale(s: number) {
     const width = 4;
     const buffer = new Float64Array(width * width);
     const gap = width + 1;
 
     let i = 0;
     while (i < width - 1) {
-      buffer[i * gap] = scale;
+      buffer[i * gap] = s;
       i++;
     }
     buffer[i * gap] = 1;

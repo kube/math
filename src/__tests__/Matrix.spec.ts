@@ -246,4 +246,43 @@ describe(Matrix.name, () => {
       expect(inv.toPrettyString()).toEqual(expected.toPrettyString());
     });
   });
+
+  describe(Matrix.scaleX.name, () => {
+    it("should scale only the X axis", () => {
+      const m = Matrix.scaleX(2);
+      Assert<IsExactType<typeof m, Matrix<4, 4>>>();
+      expect(m.toArray()).toEqual([
+        [2, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1],
+      ]);
+    });
+  });
+
+  describe(Matrix.scaleY.name, () => {
+    it("should scale only the Y axis", () => {
+      const m = Matrix.scaleY(3);
+      Assert<IsExactType<typeof m, Matrix<4, 4>>>();
+      expect(m.toArray()).toEqual([
+        [1, 0, 0, 0],
+        [0, 3, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1],
+      ]);
+    });
+  });
+
+  describe(Matrix.scaleZ.name, () => {
+    it("should scale only the Z axis", () => {
+      const m = Matrix.scaleZ(4);
+      Assert<IsExactType<typeof m, Matrix<4, 4>>>();
+      expect(m.toArray()).toEqual([
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 4, 0],
+        [0, 0, 0, 1],
+      ]);
+    });
+  });
 });
